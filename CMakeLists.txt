@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.21)
+project(DirtySocks VERSION 0.1.0 LANGUAGES CXX)
+
+include(CTest)
+enable_testing()
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS FALSE)
+
+# add_library(DirtySocks)
+add_executable(DirtySocks)
+add_subdirectory(src)
+
+if(WIN32)
+    target_link_libraries(DirtySocks PRIVATE ws2_32)
+endif()
+if(MSVC)
+    target_compile_definitions(DirtySocks PRIVATE _UNICODE UNICODE)
+endif()
+
+target_include_directories(DirtySocks
+PUBLIC
+    include
+PRIVATE
+    src
+)
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
