@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "IpAddress.hpp"
+#include "SocketAddress.hpp"
 #include "System.hpp"
 
 int main()
@@ -14,18 +14,32 @@ int main()
     auto& out = std::cout;
 #endif
 
-    ds::IpAddress addr1(192, 168, 0, 1, 7777);
-    out << addr1.get_presentation() << '\n';
+    ds::SocketAddress addr_fixed(192, 168, 0, 1, 7777);
+    out << addr_fixed.get_presentation() << '\n';
 
-    auto addr2 = ds::IpAddress::resolve(TEXT("example.com"), TEXT("http"));
-    if (addr2)
-        out << addr2->get_presentation() << '\n';
+    auto addr = ds::SocketAddress::resolve(TEXT("192.168.0.1"), TEXT("30000"), ds::IpVersion::V4);
+    assert(addr);
+    out << addr->get_presentation() << "\n\n";
+
+    addr = ds::SocketAddress::resolve(TEXT("example.com"), TEXT("0"), ds::IpVersion::V4);
+    if (addr)
+        out << addr->get_presentation() << '\n';
     else
-        out << "resolve failed!" << '\n';
+        out << "resolve failed for IPv4 `example.com`" << '\n';
 
-    auto addr3 = ds::IpAddress::resolve(TEXT("192.168.0.1:7878"));
-    assert(addr3);
-    out << addr3->get_presentation() << '\n';
+    addr = ds::SocketAddress::resolve(TEXT("example.com"), TEXT("0"), ds::IpVersion::V6);
+    if (addr)
+        out << addr->get_presentation() << "\n\n";
+    else
+        out << "resolve failed for IPv6 `example.com`" << "\n\n";
+
+    addr = ds::SocketAddress::resolve(TEXT("localhost"), TEXT("0"), ds::IpVersion::V4);
+    assert(addr);
+    out << addr->get_presentation() << '\n';
+
+    addr = ds::SocketAddress::resolve(TEXT("localhost"), TEXT("0"), ds::IpVersion::V6);
+    assert(addr);
+    out << addr->get_presentation() << '\n';
 
     ds::System::destroy();
 }

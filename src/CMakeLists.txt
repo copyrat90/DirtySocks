@@ -1,5 +1,5 @@
 target_sources(DirtySocks PRIVATE
     main.cpp
-    IpAddress.cpp
+    SocketAddress.cpp
     System.cpp
 )

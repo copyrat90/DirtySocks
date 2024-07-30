@@ -47,14 +47,9 @@ void System::print_error(string_view_t error_message)
         return;
 
 #ifdef _WIN32
-    LPTSTR msg_buffer = nullptr;
-    DWORD error_code = get_error_code();
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-                  error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), msg_buffer, 0, NULL);
-
-    (*_err) << std::format(TEXT("[{}] {}: {}\n"), get_error_code(), error_message, msg_buffer);
+    (*_err) << std::format(TEXT("[{}] {}\n"), get_error_code(), error_message);
 #else // POSIX
-    (*_err) << std::format("[{}] {}: {}\n", get_error_code(), error_message, std::strerror(get_error_code()));
+    (*_err) << std::format("[{}] {}\n", get_error_code(), error_message);
 #endif
 }
 
