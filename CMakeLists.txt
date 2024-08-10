@@ -12,6 +12,12 @@ set(CMAKE_CXX_EXTENSIONS FALSE)
 add_executable(DirtySocks)
 add_subdirectory(src)
 
+target_compile_options(DirtySocks PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /Zc:preprocessor>
+    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
+)
+
 if(WIN32)
     target_link_libraries(DirtySocks PRIVATE ws2_32)
 endif()
