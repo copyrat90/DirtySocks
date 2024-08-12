@@ -16,9 +16,9 @@ public:
     {
         DONE,
         NOT_READY,
-        PARTIAL,
+        IN_PROGRESS,
         DISCONNECTED,
-        UNEXPECTED_ERROR,
+        ERROR,
     };
 
 public:
@@ -53,6 +53,9 @@ protected:
     auto get_handle() const -> SOCKET;
 
     void init_handle(IpVersion, Protocol);
+
+protected:
+    auto get_result_from_error() const -> Result;
 
 private:
     SOCKET _handle = INVALID_SOCKET;

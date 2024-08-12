@@ -110,6 +110,16 @@ auto SocketAddress::get_ip_version() const -> IpVersion
         return IpVersion::V4;
 }
 
+auto SocketAddress::get_sockaddr() const -> const sockaddr&
+{
+    return reinterpret_cast<const sockaddr&>(_addr);
+}
+
+auto SocketAddress::get_sockaddr_len() const -> socklen_t
+{
+    return static_cast<socklen_t>(sizeof(_addr));
+}
+
 SocketAddress::SocketAddress(const sockaddr& addr)
 {
     if (addr.sa_family == AF_INET6)

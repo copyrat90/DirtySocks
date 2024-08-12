@@ -14,7 +14,7 @@ class TcpListener final : public Socket
 {
 public:
     auto listen(const SocketAddress&) -> Result;
-    auto accept(TcpSocket&) -> Result;
+    auto accept(TcpSocket& out_socket) -> Result;
 };
 
 } // namespace ds

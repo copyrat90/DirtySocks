@@ -14,13 +14,13 @@ auto TcpListener::listen(const SocketAddress& addr) -> Result
     if (SOCKET_ERROR == ::listen(get_handle(), SOMAXCONN))
     {
         DS_PRINT_ERROR("TcpListener::listen() failed");
-        return Result::UNEXPECTED_ERROR;
+        return Result::ERROR;
     }
 
     return Result::DONE;
 }
 
-auto TcpListener::accept(TcpSocket& socket) -> Result
+auto TcpListener::accept(TcpSocket& out_socket) -> Result
 {
     SOCKET handle = ::accept(get_handle(), nullptr, nullptr);
 
@@ -35,11 +35,11 @@ auto TcpListener::accept(TcpSocket& socket) -> Result
         else
         {
             DS_PRINT_ERROR("TcpListener::accept() failed");
-            return Result::UNEXPECTED_ERROR;
+            return Result::ERROR;
         }
     }
 
-    socket = TcpSocket(handle, is_blocking());
+    out_socket = TcpSocket(handle, is_blocking());
 
     return Result::DONE;
 }

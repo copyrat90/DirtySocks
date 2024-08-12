@@ -46,6 +46,9 @@ public:
 
     auto get_ip_version() const -> IpVersion;
 
+    auto get_sockaddr() const -> const sockaddr&;
+    auto get_sockaddr_len() const -> socklen_t;
+
 private:
     /// @brief Construct a socket address with `sockaddr` directly
     SocketAddress(const sockaddr& addr);

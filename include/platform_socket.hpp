@@ -10,6 +10,10 @@
 #define NOMINMAX
 #endif
 
+#ifndef NOGDI
+#define NOGDI
+#endif
+
 #include <WS2tcpip.h>
 #include <WinSock2.h>
 
