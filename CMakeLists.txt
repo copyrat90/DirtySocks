@@ -8,8 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS FALSE)
 
-# add_library(DirtySocks)
-add_executable(DirtySocks)
+add_library(DirtySocks)
 add_subdirectory(src)
 
 target_compile_options(DirtySocks PRIVATE
@@ -22,7 +21,7 @@ if(WIN32)
     target_link_libraries(DirtySocks PRIVATE ws2_32)
 endif()
 if(MSVC)
-    target_compile_definitions(DirtySocks PRIVATE _UNICODE UNICODE)
+    target_compile_definitions(DirtySocks PUBLIC _UNICODE UNICODE)
 endif()
 
 target_include_directories(DirtySocks

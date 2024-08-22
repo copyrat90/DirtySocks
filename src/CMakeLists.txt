@@ -1,5 +1,4 @@
 target_sources(DirtySocks PRIVATE
-    main.cpp
     SocketAddress.cpp
     Socket.cpp
     TcpListener.cpp
