@@ -11,9 +11,15 @@ auto TcpListener::listen(const SocketAddress& addr) -> Result
 {
     init_handle(addr.get_ip_version(), Socket::Protocol::TCP);
 
+    if (SOCKET_ERROR == ::bind(get_handle(), &addr.get_sockaddr(), addr.get_sockaddr_len()))
+    {
+        DS_PRINT_ERROR("TcpListener::listen() - ::bind() failed");
+        return Result::ERROR;
+    }
+
     if (SOCKET_ERROR == ::listen(get_handle(), SOMAXCONN))
     {
-        DS_PRINT_ERROR("TcpListener::listen() failed");
+        DS_PRINT_ERROR("TcpListener::listen() - ::listen() failed");
         return Result::ERROR;
     }
 
