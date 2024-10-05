@@ -24,7 +24,7 @@ public:
 private:
     friend class TcpListener;
 
-    TcpSocket(SOCKET, bool blocking);
+    TcpSocket(SOCKET, bool non_blocking);
 };
 
 } // namespace ds

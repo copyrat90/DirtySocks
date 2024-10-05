@@ -84,7 +84,7 @@ auto TcpSocket::receive(void* data, std::size_t data_length, std::size_t& receiv
     return Result::DONE;
 }
 
-TcpSocket::TcpSocket(SOCKET handle, bool blocking) : Socket(handle, blocking)
+TcpSocket::TcpSocket(SOCKET handle, bool non_blocking) : Socket(handle, non_blocking)
 {
 }
 

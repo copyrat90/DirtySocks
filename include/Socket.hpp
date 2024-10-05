@@ -37,8 +37,8 @@ public:
     void close();
 
 public:
-    void set_blocking(bool blocking);
-    bool is_blocking() const;
+    void set_non_blocking(bool non_blocking);
+    bool is_non_blocking() const;
 
 protected:
     enum class Protocol
@@ -48,7 +48,7 @@ protected:
     };
 
 protected:
-    Socket(SOCKET, bool blocking);
+    Socket(SOCKET, bool non_blocking);
 
     auto get_handle() const -> SOCKET;
 
@@ -59,7 +59,7 @@ protected:
 
 private:
     SOCKET _handle = INVALID_SOCKET;
-    bool _blocking = false;
+    bool _non_blocking = false;
 };
 
 } // namespace ds
