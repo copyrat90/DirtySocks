@@ -73,13 +73,13 @@ bool Socket::is_non_blocking() const
     return _non_blocking;
 }
 
-Socket::Socket(SOCKET handle, bool non_blocking) : _handle(handle), _non_blocking(non_blocking)
-{
-}
-
 auto Socket::get_handle() const -> SOCKET
 {
     return _handle;
+}
+
+Socket::Socket(SOCKET handle, bool non_blocking) : _handle(handle), _non_blocking(non_blocking)
+{
 }
 
 void Socket::init_handle(IpVersion ip_ver, Protocol protocol, std::error_code& ec)

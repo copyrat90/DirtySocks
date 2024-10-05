@@ -32,6 +32,9 @@ public:
     void set_non_blocking(bool non_blocking, std::error_code&);
     bool is_non_blocking() const;
 
+public:
+    auto get_handle() const -> SOCKET;
+
 protected:
     enum class Protocol
     {
@@ -41,8 +44,6 @@ protected:
 
 protected:
     Socket(SOCKET, bool non_blocking);
-
-    auto get_handle() const -> SOCKET;
 
     void init_handle(IpVersion, Protocol, std::error_code&);
 
