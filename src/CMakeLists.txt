@@ -4,4 +4,6 @@ target_sources(DirtySocks PRIVATE
     TcpListener.cpp
     TcpSocket.cpp
     System.cpp
+    ErrorCodes.cpp
+    ErrorConditions.cpp
 )

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <system_error>
 
 namespace ds
 {
@@ -14,12 +15,12 @@ public:
     TcpSocket() = default;
 
 public:
-    auto connect(const SocketAddress&) -> Result;
+    void connect(const SocketAddress&, std::error_code&);
 
-    auto send(const void* data, std::size_t data_length, std::size_t& sent_length) -> Result;
-    auto send(const void* data, std::size_t data_length) -> Result;
+    void send(const void* data, std::size_t data_length, std::size_t& sent_length, std::error_code&);
+    void send(const void* data, std::size_t data_length, std::error_code&);
 
-    auto receive(void* data, std::size_t data_length, std::size_t& received_length) -> Result;
+    void receive(void* data, std::size_t data_length, std::size_t& received_length, std::error_code&);
 
 private:
     friend class TcpListener;

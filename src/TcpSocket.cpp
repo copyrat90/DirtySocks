@@ -6,33 +6,24 @@
 namespace ds
 {
 
-auto TcpSocket::connect(const SocketAddress& addr) -> Result
+void TcpSocket::connect(const SocketAddress& addr, std::error_code& ec)
 {
-    init_handle(addr.get_ip_version(), Socket::Protocol::TCP);
+    ec.clear();
+    init_handle(addr.get_ip_version(), Socket::Protocol::TCP, ec);
+    if (ec)
+        return;
 
     if (SOCKET_ERROR == ::connect(get_handle(), &addr.get_sockaddr(), addr.get_sockaddr_len()))
     {
-#ifdef _WIN32
-        if (WSAEWOULDBLOCK == WSAGetLastError())
-#else // POSIX
-        if (EINPROGRESS == errno || EAGAIN == errno)
-#endif
-            return Result::IN_PROGRESS;
-        else
-        {
-            const auto result = get_result_from_error();
-            if (Result::ERROR == result)
-                DS_PRINT_ERROR("TcpSocket::connect() failed");
-
-            return result;
-        }
+        ec = System::get_last_error_code();
+        return;
     }
-
-    return Result::DONE;
 }
 
-auto TcpSocket::send(const void* data, std::size_t data_length, std::size_t& sent_length) -> Result
+void TcpSocket::send(const void* data, std::size_t data_length, std::size_t& sent_length, std::error_code& ec)
 {
+    ec.clear();
+
 #ifdef _WIN32
     const auto ret = ::send(get_handle(), static_cast<const char*>(data), static_cast<int>(data_length), 0);
 #else // POSIX
@@ -41,29 +32,24 @@ auto TcpSocket::send(const void* data, std::size_t data_length, std::size_t& sen
 
     if (SOCKET_ERROR == ret)
     {
-        const auto result = get_result_from_error();
-        if (Result::ERROR == result)
-            DS_PRINT_ERROR("TcpSocket::send() failed");
-
-        return result;
+        sent_length = 0;
+        ec = System::get_last_error_code();
+        return;
     }
 
     sent_length = ret;
-
-    if (sent_length != data_length)
-        return Result::IN_PROGRESS;
-
-    return Result::DONE;
 }
 
-auto TcpSocket::send(const void* data, std::size_t data_length) -> Result
+void TcpSocket::send(const void* data, std::size_t data_length, std::error_code& ec)
 {
     [[maybe_unused]] std::size_t sent_length;
-    return send(data, data_length, sent_length);
+    return send(data, data_length, sent_length, ec);
 }
 
-auto TcpSocket::receive(void* data, std::size_t data_length, std::size_t& received_length) -> Result
+void TcpSocket::receive(void* data, std::size_t data_length, std::size_t& received_length, std::error_code& ec)
 {
+    ec.clear();
+
 #ifdef _WIN32
     const auto ret = ::recv(get_handle(), static_cast<char*>(data), static_cast<int>(data_length), 0);
 #else // POSIX
@@ -72,16 +58,12 @@ auto TcpSocket::receive(void* data, std::size_t data_length, std::size_t& receiv
 
     if (SOCKET_ERROR == ret)
     {
-        const auto result = get_result_from_error();
-        if (Result::ERROR == result)
-            DS_PRINT_ERROR("TcpSocket::send() failed");
-
-        return result;
+        received_length = 0;
+        ec = System::get_last_error_code();
+        return;
     }
 
     received_length = ret;
-
-    return Result::DONE;
 }
 
 TcpSocket::TcpSocket(SOCKET handle, bool non_blocking) : Socket(handle, non_blocking)

@@ -4,6 +4,8 @@
 
 #include "IpVersion.hpp"
 
+#include <system_error>
+
 namespace ds
 {
 
@@ -11,16 +13,6 @@ class SocketAddress;
 
 class Socket
 {
-public:
-    enum class Result
-    {
-        DONE,
-        NOT_READY,
-        IN_PROGRESS,
-        DISCONNECTED,
-        ERROR,
-    };
-
 public:
     virtual ~Socket() = 0;
 
@@ -37,7 +29,7 @@ public:
     void close();
 
 public:
-    void set_non_blocking(bool non_blocking);
+    void set_non_blocking(bool non_blocking, std::error_code&);
     bool is_non_blocking() const;
 
 protected:
@@ -52,10 +44,7 @@ protected:
 
     auto get_handle() const -> SOCKET;
 
-    void init_handle(IpVersion, Protocol);
-
-protected:
-    auto get_result_from_error() const -> Result;
+    void init_handle(IpVersion, Protocol, std::error_code&);
 
 private:
     SOCKET _handle = INVALID_SOCKET;

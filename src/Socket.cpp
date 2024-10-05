@@ -44,8 +44,10 @@ void Socket::close()
     }
 }
 
-void Socket::set_non_blocking(bool non_blocking)
+void Socket::set_non_blocking(bool non_blocking, std::error_code& ec)
 {
+    ec.clear();
+
     int nonblock_flag_set_result;
 #ifdef _WIN32
     u_long enabled = non_blocking;
@@ -61,7 +63,7 @@ void Socket::set_non_blocking(bool non_blocking)
     }
 #endif
     if (SOCKET_ERROR == nonblock_flag_set_result)
-        DS_PRINT_ERROR("Socket::set_non_blocking() failed");
+        ec = System::get_last_error_code();
     else
         _non_blocking = non_blocking;
 }
@@ -80,7 +82,7 @@ auto Socket::get_handle() const -> SOCKET
     return _handle;
 }
 
-void Socket::init_handle(IpVersion ip_ver, Protocol protocol)
+void Socket::init_handle(IpVersion ip_ver, Protocol protocol, std::error_code& ec)
 {
     close();
 
@@ -90,46 +92,7 @@ void Socket::init_handle(IpVersion ip_ver, Protocol protocol)
     _handle = ::socket(family, type, 0);
 
     if (!is_non_blocking())
-        set_non_blocking(false);
-}
-
-auto Socket::get_result_from_error() const -> Result
-{
-#ifdef _WIN32
-    switch (WSAGetLastError())
-    {
-    case WSAEWOULDBLOCK:
-        return Result::NOT_READY;
-
-    case WSAENETRESET:
-    case WSAECONNABORTED:
-    case WSAECONNRESET:
-    case WSAETIMEDOUT:
-        return Result::DISCONNECTED;
-
-    default:
-        break;
-    }
-#else // POSIX
-
-    // `EAGAIN` is same as `EWOULDBLOCK`, at least on Ubuntu.
-    if (EAGAIN == errno || EWOULDBLOCK == errno)
-        return Result::NOT_READY;
-
-    switch (errno)
-    {
-    case ENETRESET:
-    case ECONNABORTED:
-    case ECONNRESET:
-    case EPIPE:
-        return Result::DISCONNECTED;
-
-    default:
-        break;
-    }
-#endif
-
-    return Result::ERROR;
+        set_non_blocking(false, ec);
 }
 
 } // namespace ds

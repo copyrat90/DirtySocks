@@ -3,6 +3,7 @@
 #include "Socket.hpp"
 
 #include <cstdint>
+#include <system_error>
 
 namespace ds
 {
@@ -13,8 +14,8 @@ class TcpSocket;
 class TcpListener final : public Socket
 {
 public:
-    auto listen(const SocketAddress&) -> Result;
-    auto accept(TcpSocket& out_socket) -> Result;
+    void listen(const SocketAddress&, std::error_code&);
+    void accept(TcpSocket& out_socket, std::error_code&);
 };
 
 } // namespace ds

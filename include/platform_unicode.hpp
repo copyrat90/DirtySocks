@@ -25,6 +25,5 @@ inline constexpr bool WIN32_UNICODE = false;
 
 using string_t = std::conditional_t<WIN32_UNICODE, std::wstring, std::string>;
 using string_view_t = std::conditional_t<WIN32_UNICODE, std::wstring_view, std::string_view>;
-using error_stream_t = std::conditional_t<WIN32_UNICODE, std::wostream, std::ostream>;
 
 } // namespace ds

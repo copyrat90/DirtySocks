@@ -1,5 +1,6 @@
 #include "TcpListener.hpp"
 
+#include "ErrorConditions.hpp"
 #include "SocketAddress.hpp"
 #include "System.hpp"
 #include "TcpSocket.hpp"
@@ -7,51 +8,44 @@
 namespace ds
 {
 
-auto TcpListener::listen(const SocketAddress& addr) -> Result
+void TcpListener::listen(const SocketAddress& addr, std::error_code& ec)
 {
-    init_handle(addr.get_ip_version(), Socket::Protocol::TCP);
+    ec.clear();
+    init_handle(addr.get_ip_version(), Socket::Protocol::TCP, ec);
+    if (ec)
+        return;
 
     if (SOCKET_ERROR == ::bind(get_handle(), &addr.get_sockaddr(), addr.get_sockaddr_len()))
     {
-        DS_PRINT_ERROR("TcpListener::listen() - ::bind() failed");
-        return Result::ERROR;
+        ec = System::get_last_error_code();
+        return;
     }
 
     if (SOCKET_ERROR == ::listen(get_handle(), SOMAXCONN))
     {
-        DS_PRINT_ERROR("TcpListener::listen() - ::listen() failed");
-        return Result::ERROR;
+        ec = System::get_last_error_code();
+        return;
     }
 
-    return Result::DONE;
+    return;
 }
 
-auto TcpListener::accept(TcpSocket& out_socket) -> Result
+void TcpListener::accept(TcpSocket& out_socket, std::error_code& ec)
 {
+    ec.clear();
     SOCKET handle = ::accept(get_handle(), nullptr, nullptr);
 
     if (INVALID_SOCKET == handle)
     {
-#ifdef _WIN32
-        if (WSAEWOULDBLOCK == WSAGetLastError())
-#else // POSIX
-        if (EWOULDBLOCK == errno || EAGAIN == errno)
-#endif
-            return Result::NOT_READY;
-        else
-        {
-            DS_PRINT_ERROR("TcpListener::accept() failed");
-            return Result::ERROR;
-        }
+        ec = System::get_last_error_code();
+        return;
     }
 
     out_socket = TcpSocket(handle, is_non_blocking());
 
     // inherit non-blocking option manually
     // (on some platforms, client socket doesn't inherit non-blocking option from listener socket)
-    out_socket.set_non_blocking(is_non_blocking());
-
-    return Result::DONE;
+    out_socket.set_non_blocking(is_non_blocking(), ec);
 }
 
 } // namespace ds

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <system_error>
 
 namespace ds
 {
@@ -37,12 +38,12 @@ public:
     /// @param service null-terminated service name (e.g. `http`, `80`, ...)
     /// @param ip_version IP protocol version to restrict to
     /// @return socket address if resolved properly, otherwise `std::nullopt`
-    static auto resolve(string_view_t host, string_view_t service,
-                        IpVersion ip_version) -> std::optional<SocketAddress>;
+    static auto resolve(string_view_t host, string_view_t service, IpVersion ip_version,
+                        std::error_code&) -> std::optional<SocketAddress>;
 
 public:
     /// @brief Get presentation string, including both IP and port.
-    auto get_presentation() const -> string_t;
+    auto get_presentation(std::error_code&) const -> string_t;
 
     auto get_ip_version() const -> IpVersion;
 

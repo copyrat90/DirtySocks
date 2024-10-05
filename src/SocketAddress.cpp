@@ -2,6 +2,10 @@
 
 #include "System.hpp"
 
+#ifndef _WIN32 // POSIX
+#include "ErrorCodes.hpp"
+#endif
+
 #include <format>
 
 namespace ds
@@ -22,9 +26,11 @@ SocketAddress::SocketAddress(std::uint32_t ip, std::uint16_t port) noexcept
     addr.sin_port = htons(port);
 }
 
-auto SocketAddress::resolve(string_view_t host, string_view_t service,
-                            IpVersion ip_version) -> std::optional<SocketAddress>
+auto SocketAddress::resolve(string_view_t host, string_view_t service, IpVersion ip_version,
+                            std::error_code& ec) -> std::optional<SocketAddress>
 {
+    ec.clear();
+
     std::optional<SocketAddress> result;
 
 #if defined(_WIN32) && defined(_UNICODE)
@@ -51,7 +57,11 @@ auto SocketAddress::resolve(string_view_t host, string_view_t service,
 
     if (error != 0)
     {
-        DS_PRINT_ERROR("SocketAddress::resolve() failed");
+#ifdef _WIN32
+        ec = System::get_last_error_code();
+#else // POSIX
+        ec = static_cast<AddrInfoErrc>(error);
+#endif
     }
     else
     {
@@ -76,8 +86,10 @@ auto SocketAddress::resolve(string_view_t host, string_view_t service,
     return result;
 }
 
-auto SocketAddress::get_presentation() const -> string_t
+auto SocketAddress::get_presentation(std::error_code& ec) const -> string_t
 {
+    ec.clear();
+
     std::conditional_t<WIN32_UNICODE, wchar_t, char> str_buf[INET6_ADDRSTRLEN + 1];
 
     const void* addr = nullptr;
@@ -92,7 +104,7 @@ auto SocketAddress::get_presentation() const -> string_t
     if (!inet_ntop(_addr.ss_family, addr, str_buf, sizeof(str_buf)))
 #endif
     {
-        DS_PRINT_ERROR("SocketAddress::get_presentation() failed");
+        ec = System::get_last_error_code();
         return string_t();
     }
 
