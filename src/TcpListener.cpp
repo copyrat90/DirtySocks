@@ -47,6 +47,10 @@ auto TcpListener::accept(TcpSocket& out_socket) -> Result
 
     out_socket = TcpSocket(handle, is_blocking());
 
+    // inherit non-blocking option manually
+    // (on some platforms, client socket doesn't inherit non-blocking option from listener socket)
+    out_socket.set_blocking(is_blocking());
+
     return Result::DONE;
 }
 

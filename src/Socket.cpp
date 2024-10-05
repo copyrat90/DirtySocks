@@ -25,6 +25,7 @@ Socket& Socket::operator=(Socket&& other) noexcept
     other._handle = INVALID_SOCKET;
 
     _blocking = other._blocking;
+    other._blocking = true;
 
     return *this;
 }
