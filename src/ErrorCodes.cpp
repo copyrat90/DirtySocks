@@ -2,6 +2,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <cctype>
 #else // POSIX
 #include <string.h>
 #endif
@@ -33,8 +34,11 @@ public:
     {
 #ifdef _WIN32
         char result[MAX_ERR_MSG_LEN] = {"(Invalid error message)"};
-        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error_value,
-                       MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), result, MAX_ERR_MSG_LEN, nullptr);
+        DWORD length = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error_value,
+                                      MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), result, MAX_ERR_MSG_LEN, nullptr);
+        // not sure if this trim is safe for all codepages, but it's fast
+        while (0 != length && std::isspace(result[length - 1]))
+            result[--length] = '\0';
 #else
         const char* result = gai_strerror(error_value);
 #endif
@@ -65,8 +69,11 @@ public:
         char buf[MAX_ERR_MSG_LEN] = {"(Invalid error message)"};
         char* result = buf;
 #ifdef _WIN32
-        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error_value,
-                       MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), result, MAX_ERR_MSG_LEN, nullptr);
+        DWORD length = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, error_value,
+                                      MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), result, MAX_ERR_MSG_LEN, nullptr);
+        // not sure if this trim is safe for all codepages, but it's fast
+        while (0 != length && std::isspace(result[length - 1]))
+            result[--length] = '\0';
 #else // POSIX
         result = xsi_or_gnu_strerror_r(strerror_r(error_value, buf, sizeof(buf)), result);
 #endif
