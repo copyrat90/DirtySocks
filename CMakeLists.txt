@@ -14,7 +14,7 @@ add_library(DirtySocks)
 add_subdirectory(src)
 
 target_compile_options(DirtySocks PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /Zc:preprocessor>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /Zc:preprocessor /source-charset:utf-8>
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
     $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
 )
