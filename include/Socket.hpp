@@ -3,7 +3,9 @@
 #include "platform_socket.hpp"
 
 #include "IpVersion.hpp"
+#include "SocketAddress.hpp"
 
+#include <optional>
 #include <system_error>
 
 namespace ds
@@ -31,6 +33,9 @@ public:
 public:
     void set_non_blocking(bool non_blocking, std::error_code&);
     bool is_non_blocking() const;
+
+public:
+    auto get_local_address(std::error_code&) const -> std::optional<SocketAddress>;
 
 public:
     auto get_handle() const -> SOCKET;

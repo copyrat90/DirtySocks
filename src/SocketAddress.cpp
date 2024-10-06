@@ -26,6 +26,14 @@ SocketAddress::SocketAddress(std::uint32_t ip, std::uint16_t port) noexcept
     addr.sin_port = htons(port);
 }
 
+SocketAddress::SocketAddress(const sockaddr& addr)
+{
+    if (addr.sa_family == AF_INET6)
+        reinterpret_cast<sockaddr_in6&>(_addr) = reinterpret_cast<const sockaddr_in6&>(addr);
+    else // AF_INET
+        reinterpret_cast<sockaddr_in&>(_addr) = reinterpret_cast<const sockaddr_in&>(addr);
+}
+
 auto SocketAddress::resolve(string_view_t host, string_view_t service, IpVersion ip_version,
                             std::error_code& ec) -> std::optional<SocketAddress>
 {
@@ -114,6 +122,14 @@ auto SocketAddress::get_presentation(std::error_code& ec) const -> string_t
     return std::format(TEXT("[{}]:{}"), str_buf, ntohs(reinterpret_cast<const sockaddr_in6&>(_addr).sin6_port));
 }
 
+auto SocketAddress::get_port() const -> std::uint16_t
+{
+    if (_addr.ss_family == AF_INET)
+        return ntohs(reinterpret_cast<const sockaddr_in&>(_addr).sin_port);
+    // AF_INET6
+    return ntohs(reinterpret_cast<const sockaddr_in6&>(_addr).sin6_port);
+}
+
 auto SocketAddress::get_ip_version() const -> IpVersion
 {
     if (_addr.ss_family == AF_INET6)
@@ -130,14 +146,6 @@ auto SocketAddress::get_sockaddr() const -> const sockaddr&
 auto SocketAddress::get_sockaddr_len() const -> socklen_t
 {
     return static_cast<socklen_t>(sizeof(_addr));
-}
-
-SocketAddress::SocketAddress(const sockaddr& addr)
-{
-    if (addr.sa_family == AF_INET6)
-        reinterpret_cast<sockaddr_in6&>(_addr) = reinterpret_cast<const sockaddr_in6&>(addr);
-    else // AF_INET
-        reinterpret_cast<sockaddr_in&>(_addr) = reinterpret_cast<const sockaddr_in&>(addr);
 }
 
 } // namespace ds

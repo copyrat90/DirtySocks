@@ -32,6 +32,9 @@ public:
     /// @brief Construct an IPv4 socket address (`sockaddr_in`) with IP & port numbers
     SocketAddress(std::uint32_t ip, std::uint16_t port) noexcept;
 
+    /// @brief Construct a socket address with `sockaddr` directly
+    SocketAddress(const sockaddr& addr);
+
 public:
     /// @brief Resolve the host with `getaddrinfo()`.
     /// @param host null-terminated host name (e.g. `www.example.com`, `192.168.0.1`, `localhost`, `::1`, ...)
@@ -45,14 +48,12 @@ public:
     /// @brief Get presentation string, including both IP and port.
     auto get_presentation(std::error_code&) const -> string_t;
 
+    auto get_port() const -> std::uint16_t;
+
     auto get_ip_version() const -> IpVersion;
 
     auto get_sockaddr() const -> const sockaddr&;
     auto get_sockaddr_len() const -> socklen_t;
-
-private:
-    /// @brief Construct a socket address with `sockaddr` directly
-    SocketAddress(const sockaddr& addr);
 
 private:
     sockaddr_storage _addr;

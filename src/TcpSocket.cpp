@@ -66,6 +66,20 @@ void TcpSocket::receive(void* data, std::size_t data_length, std::size_t& receiv
     received_length = ret;
 }
 
+auto TcpSocket::get_remote_address(std::error_code& ec) const -> std::optional<SocketAddress>
+{
+    sockaddr_storage addr;
+    socklen_t addr_len = sizeof(addr);
+
+    if (SOCKET_ERROR == ::getpeername(get_handle(), reinterpret_cast<sockaddr*>(&addr), &addr_len))
+    {
+        ec = System::get_last_error_code();
+        return std::nullopt;
+    }
+
+    return SocketAddress(reinterpret_cast<sockaddr&>(addr));
+}
+
 TcpSocket::TcpSocket(SOCKET handle, bool non_blocking) : Socket(handle, non_blocking)
 {
 }

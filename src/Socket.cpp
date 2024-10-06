@@ -73,6 +73,20 @@ bool Socket::is_non_blocking() const
     return _non_blocking;
 }
 
+auto Socket::get_local_address(std::error_code& ec) const -> std::optional<SocketAddress>
+{
+    sockaddr_storage addr;
+    socklen_t addr_len = sizeof(addr);
+
+    if (SOCKET_ERROR == ::getsockname(_handle, reinterpret_cast<sockaddr*>(&addr), &addr_len))
+    {
+        ec = System::get_last_error_code();
+        return std::nullopt;
+    }
+
+    return SocketAddress(reinterpret_cast<sockaddr&>(addr));
+}
+
 auto Socket::get_handle() const -> SOCKET
 {
     return _handle;
