@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(DirtySocks VERSION 0.1.0 LANGUAGES CXX)
 
+option(DS_WIN32_UNICODE FALSE)
+
 include(CTest)
 enable_testing()
 
@@ -20,7 +22,7 @@ target_compile_options(DirtySocks PRIVATE
 if(WIN32)
     target_link_libraries(DirtySocks PRIVATE ws2_32)
 endif()
-if(MSVC)
+if(DS_WIN32_UNICODE)
     target_compile_definitions(DirtySocks PUBLIC _UNICODE UNICODE)
 endif()
 
