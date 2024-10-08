@@ -1,5 +1,7 @@
 #include "ErrorCodes.hpp"
 
+#include <format>
+
 #ifdef _WIN32
 #include <Windows.h>
 #include <cctype>
@@ -100,6 +102,39 @@ private:
     SystemErrorCategory() = default;
 };
 
+class SocketSelectorErrorCategory : public std::error_category
+{
+public:
+    static auto instance() -> SocketSelectorErrorCategory&
+    {
+        static SocketSelectorErrorCategory category;
+        return category;
+    }
+
+public:
+    auto name() const noexcept -> const char* override
+    {
+        return "DirtySocks::SocketSelectorError";
+    }
+
+    auto message(int error_value) const -> std::string override
+    {
+        switch (static_cast<SocketSelectorErrc>(error_value))
+        {
+        case SocketSelectorErrc::FD_COUNT_TOO_MANY:
+            return std::format("Too many sockets in `SocketSelector` (`FD_SETSIZE` is {})", FD_SETSIZE);
+        case SocketSelectorErrc::FD_VALUE_TOO_BIG:
+            return std::format("Too large socket fd value in `SocketSelector` (`FD_SETSIZE` is {})", FD_SETSIZE);
+        default:
+            break;
+        }
+        return "(Invalid error message)";
+    }
+
+private:
+    SocketSelectorErrorCategory() = default;
+};
+
 } // namespace
 
 auto make_error_code(AddrInfoErrc errc) -> std::error_code
@@ -110,6 +145,11 @@ auto make_error_code(AddrInfoErrc errc) -> std::error_code
 auto make_error_code(SystemErrc errc) -> std::error_code
 {
     return std::error_code(static_cast<int>(errc), SystemErrorCategory::instance());
+}
+
+auto make_error_code(SocketSelectorErrc errc) -> std::error_code
+{
+    return std::error_code(static_cast<int>(errc), SocketSelectorErrorCategory::instance());
 }
 
 } // namespace ds

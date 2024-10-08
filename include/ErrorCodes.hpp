@@ -24,9 +24,11 @@ namespace ds
 
 enum class AddrInfoErrc;
 enum class SystemErrc;
+enum class SocketSelectorErrc;
 
 auto make_error_code(AddrInfoErrc) -> std::error_code;
 auto make_error_code(SystemErrc) -> std::error_code;
+auto make_error_code(SocketSelectorErrc) -> std::error_code;
 
 enum class AddrInfoErrc
 {
@@ -128,6 +130,12 @@ enum class SystemErrc
     too_many_processes_open = DS_WIN_OR_POSIX(WSAEPROCLIM, NULL_ERROR_VAL),
 };
 
+enum class SocketSelectorErrc
+{
+    FD_COUNT_TOO_MANY = 1,
+    FD_VALUE_TOO_BIG,
+};
+
 } // namespace ds
 
 namespace std
@@ -140,6 +148,11 @@ struct is_error_code_enum<ds::AddrInfoErrc> : true_type
 
 template <>
 struct is_error_code_enum<ds::SystemErrc> : true_type
+{
+};
+
+template <>
+struct is_error_code_enum<ds::SocketSelectorErrc> : true_type
 {
 };
 

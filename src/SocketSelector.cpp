@@ -1,203 +1,157 @@
 #include "SocketSelector.hpp"
 
+#include "ErrorCodes.hpp"
 #include "Socket.hpp"
 #include "System.hpp"
 
 #ifndef _WIN32 // POSIX
 #include <algorithm>
-#include <ranges>
 #endif
 
 namespace ds
 {
 
-SocketSelector::SocketSelector()
-{
-    FD_ZERO(&_read_set);
-    FD_ZERO(&_write_set);
-    FD_ZERO(&_except_set);
-
-    _read_sockets.reserve(FD_SETSIZE);
-    _write_sockets.reserve(FD_SETSIZE);
-    _except_sockets.reserve(FD_SETSIZE);
-}
-
-void SocketSelector::select(timeval* timeout, std::error_code& ec)
+int SocketSelector::select(timeval* timeout, std::error_code& ec)
 {
     ec.clear();
 
-    FD_ZERO(&_read_set);
-    FD_ZERO(&_write_set);
-    FD_ZERO(&_except_set);
-
-    for (const Socket* fd : _read_sockets)
-        FD_SET(fd->get_handle(), &_read_set);
-    for (const Socket* fd : _write_sockets)
-        FD_SET(fd->get_handle(), &_read_set);
-    for (const Socket* fd : _except_sockets)
-        FD_SET(fd->get_handle(), &_except_set);
+    _read_set.result = _read_set.all;
+    _write_set.result = _write_set.all;
+    _except_set.result = _except_set.all;
 
 #ifdef _WIN32
     const int nfds = 0;
 #else // POSIX
-    const int nfds = 1 + std::max(get_max_read_fd(), get_max_write_fd());
+    const int nfds = 1 + std::max({_read_set.max_fd, _write_set.max_fd, _except_set.max_fd});
 #endif
 
-    if (SOCKET_ERROR == ::select(nfds, (_read_sockets.empty() ? nullptr : &_read_set),
-                                 (_write_sockets.empty() ? nullptr : &_write_set),
-                                 (_except_sockets.empty() ? nullptr : &_except_set), timeout))
+    const int select_result = ::select(nfds, ((0 == _read_set.sockets_count) ? nullptr : &_read_set.result),
+                                       ((0 == _write_set.sockets_count) ? nullptr : &_write_set.result),
+                                       ((0 == _except_set.sockets_count) ? nullptr : &_except_set.result), timeout);
+    if (SOCKET_ERROR == select_result)
     {
         ec = System::get_last_error_code();
-        return;
+        return 0;
     }
+
+    return select_result;
 }
 
 bool SocketSelector::has_read(const Socket& sock) const
 {
-    return FD_ISSET(sock.get_handle(), &_read_set);
+    return _read_set.has(sock);
 }
 
 bool SocketSelector::has_write(const Socket& sock) const
 {
-    return FD_ISSET(sock.get_handle(), &_write_set);
+    return _write_set.has(sock);
 }
 
 bool SocketSelector::has_except(const Socket& sock) const
 {
-    return FD_ISSET(sock.get_handle(), &_except_set);
+    return _except_set.has(sock);
 }
 
-void SocketSelector::add_to_read_set(const Socket& sock)
+void SocketSelector::add_to_read_set(const Socket& sock, std::error_code& ec)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_read_fd)
-        _max_read_fd = std::max(*_max_read_fd, sock.get_handle());
-#endif
-
-    _read_sockets.insert(&sock);
+    _read_set.add(sock, ec);
 }
 
-void SocketSelector::add_to_write_set(const Socket& sock)
+void SocketSelector::add_to_write_set(const Socket& sock, std::error_code& ec)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_write_fd)
-        _max_write_fd = std::max(*_max_write_fd, sock.get_handle());
-#endif
-
-    _write_sockets.insert(&sock);
+    _write_set.add(sock, ec);
 }
 
-void SocketSelector::add_to_except_set(const Socket& sock)
+void SocketSelector::add_to_except_set(const Socket& sock, std::error_code& ec)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_except_fd)
-        _max_except_fd = std::max(*_max_except_fd, sock.get_handle());
-#endif
-
-    _except_sockets.insert(&sock);
+    _except_set.add(sock, ec);
 }
 
 void SocketSelector::remove_from_read_set(const Socket& sock)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_read_fd && (*_max_read_fd == sock.get_handle()))
-        _max_read_fd.reset();
-#endif
-
-    _read_sockets.erase(&sock);
+    _read_set.remove(sock);
 }
 
 void SocketSelector::remove_from_write_set(const Socket& sock)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_write_fd && (*_max_write_fd == sock.get_handle()))
-        _max_write_fd.reset();
-#endif
-
-    _write_sockets.erase(&sock);
+    _write_set.remove(sock);
 }
 
 void SocketSelector::remove_from_except_set(const Socket& sock)
 {
-#ifndef _WIN32 // POSIX
-    if (_max_except_fd && (*_max_except_fd == sock.get_handle()))
-        _max_except_fd.reset();
-#endif
-
-    _except_sockets.erase(&sock);
+    _except_set.remove(sock);
 }
 
 void SocketSelector::clear_read_set()
 {
-#ifndef _WIN32 // POSIX
-    _max_read_fd.reset();
-#endif
-
-    _read_sockets.clear();
+    _read_set.clear();
 }
 
 void SocketSelector::clear_write_set()
 {
-#ifndef _WIN32 // POSIX
-    _max_write_fd.reset();
-#endif
-
-    _write_sockets.clear();
+    _write_set.clear();
 }
 
 void SocketSelector::clear_except_set()
 {
+    _except_set.clear();
+}
+
+SocketSelector::Set::Set()
+{
+    FD_ZERO(&all);
+    FD_ZERO(&result);
+}
+
+bool SocketSelector::Set::has(const Socket& sock) const
+{
+    return FD_ISSET(sock.get_handle(), &result);
+}
+
+void SocketSelector::Set::add(const Socket& sock, std::error_code& ec)
+{
+    ec.clear();
+
+    // do nothing if duplicate passed
+    if (FD_ISSET(sock.get_handle(), &all))
+        return;
+
+    if (sockets_count >= FD_SETSIZE)
+    {
+        ec = SocketSelectorErrc::FD_COUNT_TOO_MANY;
+        return;
+    }
+
 #ifndef _WIN32 // POSIX
-    _max_except_fd.reset();
-#endif
+    if (sock.get_handle() >= FD_SETSIZE)
+    {
+        ec = SocketSelectorErrc::FD_VALUE_TOO_BIG;
+        return;
+    }
 
-    _except_sockets.clear();
+    max_fd = std::max(max_fd, sock.get_handle());
+#endif
+    FD_SET(sock.get_handle(), &all);
+    ++sockets_count;
 }
 
+void SocketSelector::Set::remove(const Socket& sock)
+{
+    // do nothing if non-existing socket passed
+    if (!FD_ISSET(sock.get_handle(), &all))
+        return;
+
+    FD_CLR(sock.get_handle(), &all);
+    --sockets_count;
+}
+
+void SocketSelector::Set::clear()
+{
+    FD_ZERO(&all);
+    sockets_count = 0;
 #ifndef _WIN32 // POSIX
-
-auto SocketSelector::get_max_read_fd() -> SOCKET
-{
-    if (_max_read_fd)
-        return *_max_read_fd;
-
-    if (_read_sockets.empty())
-        return INVALID_SOCKET;
-
-    auto fd_view = std::ranges::views::transform([](const Socket* sock) { return sock->get_handle(); });
-
-    _max_read_fd = std::ranges::max(_read_sockets | fd_view);
-    return *_max_read_fd;
-}
-
-auto SocketSelector::get_max_write_fd() -> SOCKET
-{
-    if (_max_write_fd)
-        return *_max_write_fd;
-
-    if (_write_sockets.empty())
-        return INVALID_SOCKET;
-
-    auto fd_view = std::ranges::views::transform([](const Socket* sock) { return sock->get_handle(); });
-
-    _max_write_fd = std::ranges::max(_write_sockets | fd_view);
-    return *_max_write_fd;
-}
-
-auto SocketSelector::get_max_except_fd() -> SOCKET
-{
-    if (_max_except_fd)
-        return *_max_except_fd;
-
-    if (_except_sockets.empty())
-        return INVALID_SOCKET;
-
-    auto fd_view = std::ranges::views::transform([](const Socket* sock) { return sock->get_handle(); });
-
-    _max_except_fd = std::ranges::max(_except_sockets | fd_view);
-    return *_max_except_fd;
-}
-
+    max_fd = INVALID_SOCKET;
 #endif
+}
 
 } // namespace ds
