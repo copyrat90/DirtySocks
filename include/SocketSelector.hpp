@@ -28,35 +28,43 @@ public:
     void select(timeval* timeout, std::error_code&);
 
     // result is never changed until another `select()` is called
-    bool can_read(const Socket&) const;
-    bool can_write(const Socket&) const;
+    bool has_read(const Socket&) const;
+    bool has_write(const Socket&) const;
+    bool has_except(const Socket&) const;
 
 public:
     void add_to_read_set(const Socket&);
     void add_to_write_set(const Socket&);
+    void add_to_except_set(const Socket&);
 
     void remove_from_read_set(const Socket&);
     void remove_from_write_set(const Socket&);
+    void remove_from_except_set(const Socket&);
 
     void clear_read_set();
     void clear_write_set();
+    void clear_except_set();
 
 private:
     std::unordered_set<const Socket*> _read_sockets;
     std::unordered_set<const Socket*> _write_sockets;
+    std::unordered_set<const Socket*> _except_sockets;
 
 private:
     fd_set _read_set;
     fd_set _write_set;
+    fd_set _except_set;
 
 #ifndef _WIN32 // POSIX
 private:
     auto get_max_read_fd() -> SOCKET;
     auto get_max_write_fd() -> SOCKET;
+    auto get_max_except_fd() -> SOCKET;
 
 private:
     std::optional<SOCKET> _max_read_fd;
     std::optional<SOCKET> _max_write_fd;
+    std::optional<SOCKET> _max_except_fd;
 #endif
 };
 
