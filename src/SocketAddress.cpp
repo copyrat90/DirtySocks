@@ -94,6 +94,28 @@ auto SocketAddress::resolve(string_view_t host, string_view_t service, IpVersion
     return result;
 }
 
+auto SocketAddress::any(std::uint16_t port, IpVersion ip_version) -> SocketAddress
+{
+    sockaddr_storage storage{};
+
+    if (IpVersion::V6 == ip_version)
+    {
+        auto& addr = reinterpret_cast<sockaddr_in6&>(storage);
+        addr.sin6_family = AF_INET6;
+        addr.sin6_addr = in6addr_any;
+        addr.sin6_port = htons(port);
+    }
+    else
+    {
+        auto& addr = reinterpret_cast<sockaddr_in&>(storage);
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = INADDR_ANY;
+        addr.sin_port = htons(port);
+    }
+
+    return SocketAddress(reinterpret_cast<sockaddr&>(storage));
+}
+
 auto SocketAddress::get_presentation(std::error_code& ec) const -> string_t
 {
     ec.clear();

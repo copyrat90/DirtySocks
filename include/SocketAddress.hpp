@@ -44,6 +44,15 @@ public:
     static auto resolve(string_view_t host, string_view_t service, IpVersion ip_version,
                         std::error_code&) -> std::optional<SocketAddress>;
 
+    /// @brief Get the any address used for binding (`INADDR_ANY` or `inaddr6_any`).
+    ///
+    /// This function doesn't have error code parameter.
+    /// If you give an invalid `ip_version`, this will just return IPv4 any address (`INADDR_ANY`)
+    ///
+    /// @param ip_version IP protocol version to get the any address
+    /// @return any address for given `ip_version`
+    static auto any(std::uint16_t port, IpVersion ip_version) -> SocketAddress;
+
 public:
     /// @brief Get presentation string, including both IP and port.
     auto get_presentation(std::error_code&) const -> string_t;
