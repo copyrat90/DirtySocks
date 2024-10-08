@@ -1,9 +1,9 @@
-#include "TcpListener.hpp"
+#include "DirtySocks/TcpListener.hpp"
 
-#include "ErrorConditions.hpp"
-#include "SocketAddress.hpp"
-#include "System.hpp"
-#include "TcpSocket.hpp"
+#include "DirtySocks/ErrorConditions.hpp"
+#include "DirtySocks/SocketAddress.hpp"
+#include "DirtySocks/System.hpp"
+#include "DirtySocks/TcpSocket.hpp"
 
 namespace ds
 {

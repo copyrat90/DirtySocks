@@ -1,6 +1,6 @@
 #pragma once
 
-#include "enum_as_flags.hpp"
+#include "DirtySocks/EnumAsFlags.hpp"
 
 namespace ds
 {

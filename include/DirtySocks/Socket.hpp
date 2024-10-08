@@ -1,9 +1,9 @@
 #pragma once
 
-#include "platform_socket.hpp"
+#include "DirtySocks/PlatformSocket.hpp"
 
-#include "IpVersion.hpp"
-#include "SocketAddress.hpp"
+#include "DirtySocks/IpVersion.hpp"
+#include "DirtySocks/SocketAddress.hpp"
 
 #include <optional>
 #include <system_error>

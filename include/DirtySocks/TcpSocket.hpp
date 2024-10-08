@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Socket.hpp"
-#include "SocketAddress.hpp"
+#include "DirtySocks/Socket.hpp"
+#include "DirtySocks/SocketAddress.hpp"
 
 #include <cstddef>
 #include <cstdint>

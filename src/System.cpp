@@ -1,8 +1,8 @@
-#include "System.hpp"
+#include "DirtySocks/System.hpp"
 
-#include "platform_socket.hpp"
+#include "DirtySocks/PlatformSocket.hpp"
 
-#include "ErrorCodes.hpp"
+#include "DirtySocks/ErrorCodes.hpp"
 
 namespace ds
 {

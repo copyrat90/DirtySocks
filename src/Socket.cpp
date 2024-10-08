@@ -1,8 +1,8 @@
-#include "Socket.hpp"
+#include "DirtySocks/Socket.hpp"
 
-#include "SocketAddress.hpp"
+#include "DirtySocks/SocketAddress.hpp"
 
-#include "System.hpp"
+#include "DirtySocks/System.hpp"
 
 namespace ds
 {

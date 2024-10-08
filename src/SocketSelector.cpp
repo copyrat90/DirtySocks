@@ -1,8 +1,8 @@
-#include "SocketSelector.hpp"
+#include "DirtySocks/SocketSelector.hpp"
 
-#include "ErrorCodes.hpp"
-#include "Socket.hpp"
-#include "System.hpp"
+#include "DirtySocks/ErrorCodes.hpp"
+#include "DirtySocks/Socket.hpp"
+#include "DirtySocks/System.hpp"
 
 #ifndef _WIN32 // POSIX
 #include <algorithm>

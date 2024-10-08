@@ -1,9 +1,9 @@
 #pragma once
 
-#include "platform_socket.hpp"
-#include "platform_unicode.hpp"
+#include "DirtySocks/PlatformSocket.hpp"
+#include "DirtySocks/PlatformUnicode.hpp"
 
-#include "IpVersion.hpp"
+#include "DirtySocks/IpVersion.hpp"
 
 #include <cstdint>
 #include <optional>

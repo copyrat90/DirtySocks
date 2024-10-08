@@ -1,9 +1,9 @@
-#include "SocketAddress.hpp"
+#include "DirtySocks/SocketAddress.hpp"
 
-#include "System.hpp"
+#include "DirtySocks/System.hpp"
 
 #ifndef _WIN32 // POSIX
-#include "ErrorCodes.hpp"
+#include "DirtySocks/ErrorCodes.hpp"
 #endif
 
 #include <format>

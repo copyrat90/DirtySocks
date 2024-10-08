@@ -1,6 +1,6 @@
-#include "ErrorConditions.hpp"
+#include "DirtySocks/ErrorConditions.hpp"
 
-#include "ErrorCodes.hpp"
+#include "DirtySocks/ErrorCodes.hpp"
 
 namespace ds
 {
