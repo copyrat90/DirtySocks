@@ -97,6 +97,21 @@ void SocketSelector::clear_except_set()
     _except_set.clear();
 }
 
+auto SocketSelector::read_set_count() -> std::size_t
+{
+    return _read_set.sockets_count;
+}
+
+auto SocketSelector::write_set_count() -> std::size_t
+{
+    return _write_set.sockets_count;
+}
+
+auto SocketSelector::except_set_count() -> std::size_t
+{
+    return _except_set.sockets_count;
+}
+
 SocketSelector::Set::Set()
 {
     FD_ZERO(&all);

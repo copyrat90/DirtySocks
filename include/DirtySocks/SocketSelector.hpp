@@ -39,6 +39,11 @@ public:
     void clear_write_set();
     void clear_except_set();
 
+public:
+    auto read_set_count() -> std::size_t;
+    auto write_set_count() -> std::size_t;
+    auto except_set_count() -> std::size_t;
+
 private:
     struct Set
     {
