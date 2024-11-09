@@ -49,7 +49,7 @@ public:
             return !ec;
 
         case SocketErrc::WOULD_BLOCK:
-            return ec == SystemErrc::operation_would_block || ec == SystemErrc::resource_unavailable_try_again;
+            return ec == SystemErrc::operation_would_block || ec == SystemErrc::resource_unavailable_try_again || ec == SystemErrc::io_pending;
 
         case SocketErrc::DISCONNECTED:
             return ec == SystemErrc::network_reset || ec == SystemErrc::connection_aborted ||

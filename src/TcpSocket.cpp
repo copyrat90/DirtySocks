@@ -46,6 +46,57 @@ void TcpSocket::send(const void* data, std::size_t data_length, std::error_code&
     return send(data, data_length, sent_length, ec);
 }
 
+void TcpSocket::send(std::span<IoBuffer> buffers, std::size_t& sent_length, std::error_code& ec)
+{
+    ec.clear();
+
+#ifdef _WIN32
+    DWORD sent;
+    const auto ret =
+        WSASend(get_handle(), buffers.data(), static_cast<DWORD>(buffers.size()), &sent, 0, nullptr, nullptr);
+#else // POSIX
+    msghdr msg{};
+    msg.msg_iov = buffers.data();
+    msg.msg_iovlen = buffers.size();
+    const auto ret = sendmsg(get_handle(), &msg, 0);
+    const auto sent = ret;
+#endif
+
+    if (SOCKET_ERROR == ret)
+    {
+        sent_length = 0;
+        ec = System::get_last_error_code();
+        return;
+    }
+
+    sent_length = static_cast<std::size_t>(sent);
+}
+
+void TcpSocket::send(std::span<IoBuffer> buffers, std::error_code& ec)
+{
+    [[maybe_unused]] std::size_t sent_length;
+    return send(buffers, sent_length, ec);
+}
+
+#ifdef _WIN32
+void TcpSocket::send(std::span<IoBuffer> buffers, WSAOVERLAPPED& overlapped,
+                     LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine, std::error_code& ec)
+{
+    ec.clear();
+
+    const auto ret = WSASend(get_handle(), buffers.data(), static_cast<DWORD>(buffers.size()), nullptr, 0, &overlapped,
+                             completion_routine);
+
+    if (SOCKET_ERROR == ret)
+        ec = System::get_last_error_code();
+}
+
+void TcpSocket::send(std::span<IoBuffer> buffers, WSAOVERLAPPED& overlapped, std::error_code& ec)
+{
+    return send(buffers, overlapped, nullptr, ec);
+}
+#endif
+
 void TcpSocket::receive(void* data, std::size_t data_length, std::size_t& received_length, std::error_code& ec)
 {
     ec.clear();
@@ -65,6 +116,53 @@ void TcpSocket::receive(void* data, std::size_t data_length, std::size_t& receiv
 
     received_length = ret;
 }
+
+void TcpSocket::receive(std::span<IoBuffer> buffers, std::size_t& received_length, std::error_code& ec)
+{
+    ec.clear();
+
+#ifdef _WIN32
+    DWORD received;
+    DWORD flags = 0;
+    const auto ret =
+        WSARecv(get_handle(), buffers.data(), static_cast<DWORD>(buffers.size()), &received, &flags, nullptr, nullptr);
+#else
+    msghdr msg{};
+    msg.msg_iov = buffers.data();
+    msg.msg_iovlen = buffers.size();
+    const auto ret = recvmsg(get_handle(), &msg, 0);
+    const auto received = ret;
+#endif
+
+    if (SOCKET_ERROR == ret)
+    {
+        received_length = 0;
+        ec = System::get_last_error_code();
+        return;
+    }
+
+    received_length = static_cast<std::size_t>(received);
+}
+
+#ifdef _WIN32
+void TcpSocket::receive(std::span<IoBuffer> buffers, WSAOVERLAPPED& overlapped,
+                        LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine, std::error_code& ec)
+{
+    ec.clear();
+
+    DWORD flags = 0;
+    const auto ret = WSARecv(get_handle(), buffers.data(), static_cast<DWORD>(buffers.size()), nullptr, &flags,
+                             &overlapped, completion_routine);
+
+    if (SOCKET_ERROR == ret)
+        ec = System::get_last_error_code();
+}
+
+void TcpSocket::receive(std::span<IoBuffer> buffers, WSAOVERLAPPED& overlapped, std::error_code& ec)
+{
+    return receive(buffers, overlapped, nullptr, ec);
+}
+#endif
 
 auto TcpSocket::get_remote_address(std::error_code& ec) const -> std::optional<SocketAddress>
 {

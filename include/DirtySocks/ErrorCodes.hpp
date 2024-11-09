@@ -128,6 +128,7 @@ enum class SystemErrc
     version_not_supported = DS_WIN_OR_POSIX(WSAVERNOTSUPPORTED, NULL_ERROR_VAL),
     network_subsystem_unavailable = DS_WIN_OR_POSIX(WSASYSNOTREADY, NULL_ERROR_VAL),
     too_many_processes_open = DS_WIN_OR_POSIX(WSAEPROCLIM, NULL_ERROR_VAL),
+    io_pending = DS_WIN_OR_POSIX(WSA_IO_PENDING, NULL_ERROR_VAL),
 };
 
 enum class SocketSelectorErrc
