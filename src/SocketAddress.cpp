@@ -34,6 +34,21 @@ SocketAddress::SocketAddress(const sockaddr& addr)
         reinterpret_cast<sockaddr_in&>(_addr) = reinterpret_cast<const sockaddr_in&>(addr);
 }
 
+SocketAddress::SocketAddress(const SocketAddress& other)
+{
+    operator=(other);
+}
+
+SocketAddress& SocketAddress::operator=(const SocketAddress& other)
+{
+    if (other._addr.ss_family == AF_INET6)
+        reinterpret_cast<sockaddr_in6&>(_addr) = reinterpret_cast<const sockaddr_in6&>(other._addr);
+    else // AF_INET
+        reinterpret_cast<sockaddr_in&>(_addr) = reinterpret_cast<const sockaddr_in&>(other._addr);
+
+    return *this;
+}
+
 auto SocketAddress::resolve(string_view_t host, string_view_t service, IpVersion ip_version,
                             std::error_code& ec) -> std::optional<SocketAddress>
 {

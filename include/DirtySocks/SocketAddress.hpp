@@ -35,6 +35,12 @@ public:
     /// @brief Construct a socket address with `sockaddr` directly
     SocketAddress(const sockaddr& addr);
 
+    /// @brief Copy constructor
+    SocketAddress(const SocketAddress&);
+
+    /// @brief Copy assignment operator
+    SocketAddress& operator=(const SocketAddress&);
+
 public:
     /// @brief Resolve the host with `getaddrinfo()`.
     /// @param host null-terminated host name (e.g. `www.example.com`, `192.168.0.1`, `localhost`, `::1`, ...)
